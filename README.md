@@ -1,11 +1,11 @@
 **Team Name:** 314IV
 
-**Members:**
-* Ismoil Salohiddinov (ID: 220626)
+**Members:** * Ismoil Salohiddinov (ID: 220626)
 * Komiljon Qosimov (ID: 220493)
 * Abdurashid Djumabaev (ID: 210004)
-  **Topic:** #6 Federated Continual Learning for MRI Segmentation
-  **GitHub Repository:** [https://github.com/smailxpy/Federated-MRI-Segmentation](https://github.com/smailxpy/Federated-MRI-Segmentation)
+
+**Topic:** #6 Federated Continual Learning for MRI Segmentation
+**GitHub Repository:** [https://github.com/smailxpy/Federated-MRI-Segmentation](https://github.com/smailxpy/Federated-MRI-Segmentation)
 
 ---
 
