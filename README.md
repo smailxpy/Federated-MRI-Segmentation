@@ -1,6 +1,7 @@
 **Team Name:** 314IV
 
-**Members:** * Ismoil Salohiddinov (ID: 220626)
+**Members:** 
+*Ismoil Salohiddinov (ID: 220626)
 * Komiljon Qosimov (ID: 220493)
 * Abdurashid Djumabaev (ID: 210004)
 
