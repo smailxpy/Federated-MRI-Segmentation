@@ -1,5 +1,3 @@
-**Team Message for Submission:**
-
 **Team Name:** 314IV
 **Members:**
 
@@ -134,28 +132,3 @@ No patient data collection. All datasets are open and anonymized. The project fo
 5. Hsu, C. et al. (2019). *SplitFed: Splitting Models for Faster Federated Training*. arXiv:1909.
 
 ---
-
-## Sample ROADMAP.md (for GitHub)
-
-```markdown
-# Federated Continual Learning for MRI Segmentation — ROADMAP
-
-## Week-by-Week Plan
-| Week | Goal | Deliverable | Owner | Status |
-|------|------|--------------|--------|---------|
-| 1 | Team & topic confirmed | Repo created, README added | All | ✅ |
-| 2 | Literature review, dataset setup | BraTS downloaded, data split by hospital | Komiljon | 🔄 |
-| 3 | Baseline U-Net and FedAvg setup | Initial training on one client | Ismoil | ⏳ |
-| 4 | Implement drift-aware adapters | Adapter module integrated into U-Net | Abdurashid | ⏳ |
-| 5 | Run full FL + continual experiments | Ablation results (with/without adapters) | All | ⏳ |
-| 6 | Analyze results & finalize report | Tables, figures, presentation slides | All | ⏳ |
-
-## Weekly Update Format
-- [ ] Dataset preparation ✅
-- [ ] Baseline model training 🔄
-- [ ] Adapter testing 🧠
-- [ ] Evaluation metrics setup 📊
-- [ ] Presentation prep 🎥
-
-*Maintained by Team 314IV*
-```
