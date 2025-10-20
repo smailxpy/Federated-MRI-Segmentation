@@ -6,6 +6,7 @@
 * Abdurashid Djumabaev (ID: 210004)
 
 **Topic:** #6 Federated Continual Learning for MRI Segmentation
+
 **GitHub Repository:** [https://github.com/smailxpy/Federated-MRI-Segmentation](https://github.com/smailxpy/Federated-MRI-Segmentation)
 
 ---
