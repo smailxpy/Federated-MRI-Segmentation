@@ -1,6 +1,6 @@
 **Team Name:** 314IV
-**Members:**
 
+**Members:**
 * Ismoil Salohiddinov (ID: 220626)
 * Komiljon Qosimov (ID: 220493)
 * Abdurashid Djumabaev (ID: 210004)
@@ -110,7 +110,6 @@ MRI segmentation plays a vital role in medical diagnostics, enabling accurate tu
 | Experiments        | Abdurashid  | Ismoil      | All       | All      |
 | Documentation      | Ismoil      | Komiljon    | All       | All      |
 
-**Repo:** [ROADMAP.md](https://github.com/smailxpy/Federated-MRI-Segmentation/blob/main/ROADMAP.md)
 
 ### 10. Expected Outcomes
 
