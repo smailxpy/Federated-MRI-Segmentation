@@ -1,0 +1,73 @@
+# Quick Test Configuration for BraTS2021 Federated Learning
+# Team: 314IV | Topic: #6 Federated Continual Learning for MRI Segmentation
+
+dataset:
+  name: "brats2021"
+  data_dir: "data/raw"
+  processed_dir: "data/processed"
+  modalities: ["t1", "t1ce", "t2", "flair"]
+  target_size: [128, 128, 128]
+  num_classes: 4
+  class_names: ["Background", "NCR/NET", "ED", "ET"]
+  max_patients: 50
+
+federated:
+  num_clients: 4
+  num_rounds: 2  # Quick test
+  local_epochs: 1  # Quick test
+  batch_size: 1  # Small batch for memory
+  learning_rate: 1e-4
+  min_available_clients: 4
+  fraction_fit: 1.0
+  fraction_evaluate: 1.0
+  strategy: "fedavg"
+
+model:
+  name: "unet_with_adapters"
+  backbone: "unet_3d"
+  encoder_channels: [16, 32, 64, 128]  # Smaller for quick test
+  decoder_channels: [128, 64, 32, 16]
+  adapter_channels: 8
+  dropout: 0.1
+  use_adapters: true
+
+continual:
+  tasks: ["hospital_a", "hospital_b", "hospital_c", "hospital_d"]
+  task_sequence: [0, 1, 2, 3]
+  forgetting_threshold: 0.1
+
+training:
+  optimizer: "adam"
+  loss_function: "dice_ce_loss"
+  scheduler: "cosine"
+  weight_decay: 1e-5
+  patience: 10
+  save_interval: 1
+
+evaluation:
+  metrics: ["dice", "hd95"]
+  validation_split: 0.2
+  test_split: 0.0
+
+hardware:
+  device: "mps"  # Mac Apple Silicon
+  num_workers: 0  # Avoid multiprocessing issues
+  pin_memory: false
+  mixed_precision: false
+
+logging:
+  log_dir: "logs"
+  experiment_name: "fcl_brats2021_quick_test"
+  log_level: "INFO"
+  use_wandb: false
+
+output:
+  results_dir: "results"
+  model_save_dir: "results/models"
+  plots_dir: "results/plots"
+  metrics_dir: "results/metrics"
+  save_best_model: true
+  save_checkpoints: true
+
+
+

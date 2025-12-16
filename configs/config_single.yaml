@@ -1,0 +1,86 @@
+continual:
+  forgetting_threshold: 0.1
+  task_sequence:
+  - 0
+  - 1
+  - 2
+  - 3
+  tasks:
+  - hospital_a
+dataset:
+  data_dir: data/raw
+  kaggle_dataset: awsaf49/brats2021-1
+  modalities:
+  - t1
+  - t1ce
+  - t2
+  - flair
+  name: brats2021
+  num_classes: 4
+  processed_dir: data/processed
+  target_size:
+  - 128
+  - 128
+  - 128
+evaluation:
+  cross_validation: true
+  metrics:
+  - dice
+  - hd95
+  - precision
+  - recall
+  - specificity
+  test_split: 0.1
+  validation_split: 0.2
+federated:
+  batch_size: 4
+  fraction_evaluate: 1.0
+  fraction_fit: 1.0
+  learning_rate: 1e-4
+  local_epochs: 5
+  min_available_clients: 4
+  num_clients: 4
+  num_rounds: 10
+hardware:
+  device: cuda
+  mixed_precision: true
+  num_workers: 4
+  pin_memory: true
+logging:
+  experiment_name: fcl_mri_segmentation
+  log_dir: logs
+  log_level: INFO
+  use_wandb: false
+  wandb_project: federated-mri-segmentation
+model:
+  adapter_channels: 16
+  backbone: unet_3d
+  decoder_channels:
+  - 512
+  - 256
+  - 128
+  - 64
+  - 32
+  dropout: 0.1
+  encoder_channels:
+  - 32
+  - 64
+  - 128
+  - 256
+  - 512
+  name: unet_with_adapters
+  use_adapters: true
+output:
+  metrics_dir: results/metrics
+  model_save_dir: results/models
+  plots_dir: results/plots
+  results_dir: results
+  save_best_model: true
+  save_checkpoints: true
+training:
+  loss_function: dice_loss
+  optimizer: adam
+  patience: 10
+  save_interval: 5
+  scheduler: cosine
+  weight_decay: 1e-5

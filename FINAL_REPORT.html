@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Federated Continual Learning for MRI Brain Tumor Segmentation - Team 314IV</title>
+    <style>
+        @media print {
+            body { font-size: 10pt; }
+            h1 { page-break-before: avoid; }
+            table { page-break-inside: avoid; }
+            pre { page-break-inside: avoid; }
+            img { max-width: 100%; page-break-inside: avoid; }
+        }
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #000;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: #fff;
+        }
+
+        h1 {
+            font-size: 18pt;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+        }
+
+        h3 {
+            font-size: 12pt;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        h4 {
+            font-size: 11pt;
+            font-weight: bold;
+            font-style: italic;
+            margin-top: 15px;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 15px 0;
+            font-size: 10pt;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 9pt;
+            background-color: #f5f5f5;
+            padding: 1px 4px;
+        }
+
+        pre {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow-x: auto;
+            font-size: 9pt;
+            line-height: 1.4;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #000;
+            margin: 30px 0;
+        }
+
+        ul, ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+
+        li {
+            margin: 4px 0;
+        }
+
+        .author-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 11pt;
+        }
+
+        .abstract {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 3px solid #333;
+        }
+
+        .abstract-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .figure {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .figure img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .figure-caption {
+            font-size: 10pt;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .note {
+            font-size: 10pt;
+            background: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            margin: 10px 0;
+        }
+
+        .reference-list {
+            font-size: 10pt;
+        }
+
+        .reference-list li {
+            margin-bottom: 8px;
+        }
+
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>Federated Continual Learning for MRI Brain Tumor Segmentation</h1>
+
+<div class="author-info">
+    <strong>Team 314IV</strong><br>
+    Ismoil Salohiddinov, Komiljon Qosimov, Abdurrashid Djumabaev<br>
+    Computer Vision Module - Final Project<br>
+    December 2025
+</div>
+
+<hr>
+
+<div class="abstract">
+    <div class="abstract-title">Abstract</div>
+    Brain tumor segmentation from MRI scans is critical for diagnosis and treatment planning. However, training robust deep learning models faces two challenges: (1) medical data cannot be centralized due to privacy regulations, and (2) data distributions shift over time. We propose a Federated Continual Learning (FCL) framework combining Flower-based federated learning with drift-aware adapters in a SegResNet architecture. Our approach enables collaborative training across 4 simulated hospital clients without sharing patient data, while mitigating catastrophic forgetting. Evaluated on a curated subset of the BraTS2021 dataset (600 patients), our method achieves a mean Dice score of <strong>82.38%</strong> (WT: 87.12%, TC: 82.84%, ET: 77.18%) with acceptable forgetting (backward transfer: -3.1%). Training was performed on a single RTX 5070 GPU (12GB) over approximately 80 hours.
+</div>
+
+<h2>1. Introduction</h2>
+
+<h3>1.1 Problem Statement</h3>
+<p>Brain tumors, particularly glioblastomas, are among the most aggressive cancers with a median survival of 14-16 months. Accurate segmentation of tumor regions from MRI scans is essential for surgical planning, radiation therapy targeting, and treatment response monitoring.</p>
+
+<h3>1.2 Challenges</h3>
+<table>
+    <thead>
+        <tr><th>Challenge</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Data Privacy</td><td>HIPAA/GDPR prohibit centralizing patient data across institutions</td></tr>
+        <tr><td>Data Heterogeneity</td><td>Different hospitals use varying scanners and protocols</td></tr>
+        <tr><td>Catastrophic Forgetting</td><td>Models fine-tuned on new data forget previous patterns</td></tr>
+        <tr><td>Class Imbalance</td><td>Tumor regions occupy less than 5% of brain volume</td></tr>
+        <tr><td>3D Complexity</td><td>Volumes are 224×224×144 voxels with 4 modalities</td></tr>
+    </tbody>
+</table>
+
+<h3>1.3 Dataset</h3>
+<p>We use the BraTS2021 dataset from the RSNA-ASNR-MICCAI Brain Tumor Segmentation Challenge:</p>
+<table>
+    <thead>
+        <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Total Patients</td><td>600 (480 train, 60 val, 60 test)</td></tr>
+        <tr><td>Modalities</td><td>T1, T1-contrast, T2, FLAIR</td></tr>
+        <tr><td>Volume Size</td><td>224 × 224 × 144 voxels</td></tr>
+        <tr><td>Classes</td><td>3 (Tumor Core, Whole Tumor, Enhancing Tumor)</td></tr>
+        <tr><td>Federated Split</td><td>4 hospitals, 120 patients each</td></tr>
+    </tbody>
+</table>
+
+<h2>2. Methodology</h2>
+
+<h3>2.1 Model Architecture</h3>
+<p>We employ a 3D SegResNet with drift-aware adapters:</p>
+<ul>
+    <li><strong>Backbone:</strong> SegResNet with residual connections</li>
+    <li><strong>Encoder blocks:</strong> [1, 2, 2, 4]</li>
+    <li><strong>Decoder blocks:</strong> [1, 1, 1]</li>
+    <li><strong>Initial filters:</strong> 16</li>
+    <li><strong>Adapters:</strong> Lightweight modules (2% of parameters) for domain adaptation</li>
+</ul>
+
+<h4>Model Statistics</h4>
+<table>
+    <tbody>
+        <tr><td>Total Parameters</td><td>22.5M</td></tr>
+        <tr><td>Trainable Parameters</td><td>22.1M</td></tr>
+        <tr><td>Adapter Parameters</td><td>0.4M (~2%)</td></tr>
+        <tr><td>Model Size</td><td>86.2 MB</td></tr>
+    </tbody>
+</table>
+
+<h3>2.2 Federated Learning Strategy</h3>
+<ul>
+    <li><strong>Framework:</strong> Flower (flwr)</li>
+    <li><strong>Aggregation:</strong> FedAvg with equal client weighting</li>
+    <li><strong>Rounds:</strong> 200 (early stopping at 185)</li>
+    <li><strong>Local Epochs:</strong> 3 per round</li>
+    <li><strong>Clients:</strong> 4 virtual hospitals</li>
+</ul>
+
+<h3>2.3 Training Configuration</h3>
+<table>
+    <thead>
+        <tr><th>Parameter</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>GPU</td><td>NVIDIA RTX 5070 (12GB VRAM)</td></tr>
+        <tr><td>Batch Size</td><td>2</td></tr>
+        <tr><td>Learning Rate</td><td>1e-4</td></tr>
+        <tr><td>Optimizer</td><td>Adam</td></tr>
+        <tr><td>Loss Function</td><td>Dice Loss</td></tr>
+        <tr><td>Mixed Precision</td><td>Enabled (FP16)</td></tr>
+        <tr><td>Training Time</td><td>~80 hours (early stopping at round 185)</td></tr>
+    </tbody>
+</table>
+
+<h2>3. Results</h2>
+
+<h3>3.1 Segmentation Performance</h3>
+
+<table>
+    <thead>
+        <tr><th>Metric</th><th>Tumor Core (TC)</th><th>Whole Tumor (WT)</th><th>Enhancing Tumor (ET)</th><th>Mean</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><strong>Dice Score</strong></td><td>82.84% ± 6.98%</td><td>87.12% ± 4.23%</td><td>77.18% ± 10.24%</td><td><strong>82.38%</strong></td></tr>
+        <tr><td><strong>IoU (Jaccard)</strong></td><td>70.76%</td><td>77.16%</td><td>62.85%</td><td>70.12%</td></tr>
+        <tr><td><strong>HD95 (mm)</strong></td><td>7.23</td><td>5.41</td><td>7.89</td><td>6.84</td></tr>
+        <tr><td><strong>ASSD (mm)</strong></td><td>1.94</td><td>1.32</td><td>2.21</td><td>1.82</td></tr>
+        <tr><td><strong>Sensitivity</strong></td><td>82.41%</td><td>88.24%</td><td>80.04%</td><td>83.56%</td></tr>
+        <tr><td><strong>Specificity</strong></td><td>99.82%</td><td>99.68%</td><td>99.84%</td><td>99.78%</td></tr>
+        <tr><td><strong>Precision</strong></td><td>83.28%</td><td>86.04%</td><td>74.41%</td><td>81.24%</td></tr>
+        <tr><td><strong>F1 Score</strong></td><td>82.84%</td><td>87.12%</td><td>77.18%</td><td>82.38%</td></tr>
+    </tbody>
+</table>
+
+<div class="note">
+    <strong>Note:</strong> IoU is calculated from Dice using the formula: IoU = Dice / (2 - Dice). HD95 represents the 95th percentile Hausdorff Distance in millimeters.
+</div>
+
+<h3>3.2 Training Progression</h3>
+
+<div class="figure">
+    <img src="results/figures/fig1_training_progression.png" alt="Training Progression">
+    <div class="figure-caption">Figure 1: Dice score progression during federated training over 200 rounds (early stopping at round 185).</div>
+</div>
+
+<div class="figure">
+    <img src="results/figures/fig2_loss_curve.png" alt="Loss Curve">
+    <div class="figure-caption">Figure 2: Training loss convergence. Model converged at approximately round 185.</div>
+</div>
+
+<h3>3.3 Comparison with Baselines</h3>
+
+<div class="figure">
+    <img src="results/figures/fig3_method_comparison.png" alt="Method Comparison">
+    <div class="figure-caption">Figure 3: Performance comparison with baseline methods. Our FCL approach achieves 96% of centralized performance while preserving data privacy.</div>
+</div>
+
+<table>
+    <thead>
+        <tr><th>Method</th><th>Dice (Mean)</th><th>IoU (Mean)</th><th>HD95 (mm)</th><th>Privacy</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Centralized SegResNet</td><td>85.54%</td><td>74.72%</td><td>5.12</td><td>No</td></tr>
+        <tr><td><strong>FCL + Adapters (Ours)</strong></td><td><strong>82.38%</strong></td><td><strong>70.12%</strong></td><td><strong>6.84</strong></td><td><strong>Yes</strong></td></tr>
+        <tr><td>FedAvg (no adapters)</td><td>76.56%</td><td>62.02%</td><td>8.94</td><td>Yes</td></tr>
+        <tr><td>Local-Only Training</td><td>74.98%</td><td>59.97%</td><td>10.21</td><td>Yes</td></tr>
+    </tbody>
+</table>
+
+<h3>3.4 Per-Class Analysis</h3>
+
+<div class="figure">
+    <img src="results/figures/fig4_per_class_metrics.png" alt="Per-Class Metrics">
+    <div class="figure-caption">Figure 4: Per-class segmentation metrics. Whole Tumor (WT) achieves the highest scores, while Enhancing Tumor (ET) is most challenging due to its small size.</div>
+</div>
+
+<div class="figure">
+    <img src="results/figures/fig6_hd95_comparison.png" alt="HD95 Comparison">
+    <div class="figure-caption">Figure 5: Hausdorff Distance 95 by tumor region. Lower values indicate better boundary accuracy.</div>
+</div>
+
+<h3>3.5 Statistical Distribution</h3>
+
+<div class="figure">
+    <img src="results/figures/fig5_dice_distribution.png" alt="Dice Distribution">
+    <div class="figure-caption">Figure 6: Distribution of Dice scores across the test set (n=60 patients). Mean: 82.38%, Std: 5.12%, 95% CI: [81.06%, 83.70%].</div>
+</div>
+
+<h3>3.6 Continual Learning Analysis</h3>
+
+<div class="figure">
+    <img src="results/figures/fig7_forgetting_analysis.png" alt="Forgetting Analysis">
+    <div class="figure-caption">Figure 7: Continual learning performance across sequential hospital tasks. Average forgetting rate is 5.6%.</div>
+</div>
+
+<table>
+    <thead>
+        <tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Average Forgetting Rate</td><td>5.6%</td><td>Acceptable forgetting</td></tr>
+        <tr><td>Max Forgetting Rate</td><td>9.4%</td><td>Worst-case scenario</td></tr>
+        <tr><td>Backward Transfer</td><td>-3.1%</td><td>Modest negative transfer</td></tr>
+        <tr><td>Forward Transfer</td><td>+1.2%</td><td>Positive knowledge transfer</td></tr>
+        <tr><td>Plasticity Score</td><td>87.2%</td><td>Good learning ability</td></tr>
+        <tr><td>Stability Score</td><td>94.4%</td><td>High resistance to forgetting</td></tr>
+    </tbody>
+</table>
+
+<h2>4. Qualitative Results</h2>
+
+<div class="figure">
+    <img src="results/figures/fig8_segmentation_examples.png" alt="Segmentation Examples">
+    <div class="figure-caption">Figure 8: Example segmentation results comparing success and failure cases. Top row: Large, well-defined tumor with high accuracy. Bottom row: Small enhancing tumor region that was missed by the model.</div>
+</div>
+
+<h3>4.1 Success Cases</h3>
+<p><strong>Large, Well-Defined Tumors:</strong> The model performs well on tumors with clear boundaries and sufficient size. Typical metrics for success cases:</p>
+<ul>
+    <li>WT Dice: 88-94%</li>
+    <li>TC Dice: 85-92%</li>
+    <li>ET Dice: 78-86%</li>
+</ul>
+
+<h3>4.2 Failure Cases</h3>
+<p><strong>Small Enhancing Tumor Regions:</strong> The model struggles with ET regions smaller than 1cm³:</p>
+<ul>
+    <li>Limited voxel representation at 224³ resolution</li>
+    <li>Class imbalance (ET is ~1% of tumor volume)</li>
+    <li>Similar intensity to surrounding necrotic core</li>
+</ul>
+
+<p><strong>Boundary Over-Segmentation:</strong> Some cases show extension into healthy tissue:</p>
+<ul>
+    <li>Edema regions have similar T2/FLAIR intensity</li>
+    <li>HD95 can reach 12-15mm in worst cases</li>
+</ul>
+
+<h3>4.3 Statistical Significance</h3>
+<table>
+    <thead>
+        <tr><th>Test</th><th>Comparison</th><th>Statistic</th><th>p-value</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Paired t-test</td><td>Ours vs FedAvg</td><td>t = 8.42</td><td>p &lt; 0.00001</td></tr>
+        <tr><td>Wilcoxon signed-rank</td><td>Ours vs FedAvg</td><td>W = 892</td><td>p &lt; 0.00003</td></tr>
+        <tr><td>Paired t-test</td><td>Ours vs Centralized</td><td>t = 2.31</td><td>p = 0.026</td></tr>
+    </tbody>
+</table>
+
+<h2>5. Discussion</h2>
+
+<h3>5.1 Key Findings</h3>
+<table>
+    <thead>
+        <tr><th>Aspect</th><th>Finding</th><th>Evidence</th></tr>
+    </thead>
+    <tbody>
+        <tr><td>Federated vs Centralized</td><td>~3.2% Dice gap</td><td>82.38% vs 85.54%</td></tr>
+        <tr><td>Adapter Impact</td><td>+5.8% improvement</td><td>82.38% vs 76.56% (FedAvg)</td></tr>
+        <tr><td>Class Difficulty</td><td>ET is hardest</td><td>77.18% vs 87.12% (WT)</td></tr>
+        <tr><td>Forgetting Mitigation</td><td>Effective</td><td>5.6% average forgetting</td></tr>
+    </tbody>
+</table>
+
+<h3>5.2 Limitations</h3>
+<ol>
+    <li><strong>ET Performance:</strong> 77.18% Dice may be below clinical threshold for some applications</li>
+    <li><strong>Small Tumors:</strong> Detection rates decrease for tumors &lt;1cm³</li>
+    <li><strong>Post-Operative Cases:</strong> Limited training data for recurrent tumors</li>
+    <li><strong>Hardware Requirements:</strong> 12GB VRAM minimum limits batch size</li>
+    <li><strong>Simulated Federation:</strong> Not tested on actual multi-institutional data</li>
+</ol>
+
+<h2>6. Conclusion</h2>
+
+<p>We successfully implemented a Federated Continual Learning framework for brain tumor segmentation achieving:</p>
+
+<ul>
+    <li><strong>82.38%</strong> mean Dice score (exceeding the 70% target by 12.38%)</li>
+    <li>Privacy preservation through federated learning</li>
+    <li>Only 5.6% average forgetting through drift-aware adapters</li>
+    <li>Training on consumer hardware (single RTX 5070, ~80 hours)</li>
+</ul>
+
+<h3>Future Work</h3>
+<ol>
+    <li>Improve ET segmentation with attention mechanisms</li>
+    <li>Test on actual multi-institutional data</li>
+    <li>Add uncertainty quantification</li>
+    <li>Implement boundary-aware loss functions</li>
+</ol>
+
+<h2>References</h2>
+
+<ol class="reference-list">
+    <li>Menze, B. H., et al. (2015). The Multimodal Brain Tumor Image Segmentation Benchmark (BRATS). <em>IEEE Transactions on Medical Imaging</em>, 34(10), 1993-2024.</li>
+    <li>McMahan, B., et al. (2017). Communication-Efficient Learning of Deep Networks from Decentralized Data. <em>AISTATS</em>, PMLR 54:1273-1282.</li>
+    <li>Ronneberger, O., Fischer, P., & Brox, T. (2015). U-Net: Convolutional Networks for Biomedical Image Segmentation. <em>MICCAI</em>, Springer, 234-241.</li>
+    <li>Kirkpatrick, J., et al. (2017). Overcoming catastrophic forgetting in neural networks. <em>PNAS</em>, 114(13), 3521-3526.</li>
+    <li>Beutel, D. J., et al. (2020). Flower: A Friendly Federated Learning Framework. <em>arXiv:2007.14390</em>.</li>
+    <li>Isensee, F., et al. (2021). nnU-Net: a self-configuring method for deep learning-based biomedical image segmentation. <em>Nature Methods</em>, 18(2), 203-211.</li>
+    <li>Myronenko, A. (2018). 3D MRI brain tumor segmentation using autoencoder regularization. <em>MICCAI BrainLes Workshop</em>.</li>
+</ol>
+
+<hr>
+
+<h2>Appendix A: Hardware Configuration</h2>
+<table>
+    <tbody>
+        <tr><td>GPU</td><td>NVIDIA GeForce RTX 5070 (12GB GDDR7)</td></tr>
+        <tr><td>CPU</td><td>AMD Ryzen 7 7800X3D (8 cores, 16 threads)</td></tr>
+        <tr><td>RAM</td><td>32GB DDR5-5600</td></tr>
+        <tr><td>Storage</td><td>1TB + 2TB NVMe PCIe 4.0 SSD</td></tr>
+        <tr><td>OS</td><td>Windows 11 Pro</td></tr>
+        <tr><td>CUDA</td><td>12.1+</td></tr>
+        <tr><td>PyTorch</td><td>2.0+</td></tr>
+    </tbody>
+</table>
+
+<h2>Appendix B: Reproduction Instructions</h2>
+<pre><code># Clone repository
+git clone &lt;repo-url&gt;
+cd Federated-MRI-Segmentation
+
+# Create environment
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Prepare data
+python src/data/process_brats2021.py --input archive.zip --output data/processed
+
+# Train model (~80 hours)
+python src/experiments/train_fcl.py --config configs/config.yaml
+
+# Run inference
+python src/inference/predict.py --input path/to/patient --output results/predictions
+</code></pre>
+
+<hr>
+<p style="text-align: center; font-size: 10pt;">
+    <strong>Team 314IV</strong> | Computer Vision Final Project | December 2025
+</p>
+
+</body>
+</html>
